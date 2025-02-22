@@ -38,8 +38,22 @@ async function run() {
         // Store a user in the database
         app.post("/user", async (req, res) => {
             const user = req.body;
-            const result = await userCollection.insertOne(user);
-            res.status(201).send(result);
+            try {
+                const existingUser = await userCollection.findOne({
+                    email: user.email,
+                });
+                if (existingUser) {
+                    return res.status(200).send({
+                        message: "User already exists",
+                        user: existingUser,
+                    });
+                }
+                const result = await userCollection.insertOne(user);
+                res.status(201).send(result);
+            } catch (error) {
+                console.error("Error saving user:", error);
+                res.status(500).send({ error: "Internal server error", error });
+            }
         });
         // Get all the users from the database
         app.get("/users", async (req, res) => {
@@ -104,21 +118,28 @@ async function run() {
         });
 
         // Update the type of a task
-        app.put("/task/:id", async (req, res) => {
-            const { id } = req.params;
-            const { category } = req.body;
-            const result = await taskCollection.updateOne(
-                { _id: new ObjectId(id) },
-                {
-                    $set: {
-                        category,
-                    },
-                }
-            );
-            const updateTask = await taskCollection.findOne({
-                _id: new ObjectId(id),
-            });
-            res.send(updateTask);
+        app.put("/tasks/category/:id", async (req, res) => {
+            try {
+                const { id } = req.params;
+                const { category } = req.body;
+
+                const res = await taskCollection.updateOne(
+                    { _id: new ObjectId(id) },
+                    {
+                        $set: {
+                            category,
+                        },
+                    }
+                );
+
+                const updatedTask = await taskCollection.findOne({
+                    _id: new ObjectId(id),
+                });
+                res.send(updatedTask);
+            } catch (error) {
+                console.error("Error updating tasks order:", error);
+                res.status(500).send({ error: "Failed to update tasks order" });
+            }
         });
     } finally {
         // Ensures that the client will close when you finish/error
