@@ -29,8 +29,6 @@ async function run() {
         app.listen(port, () => {
             console.log(`Server running on port ${port}`);
         });
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
 
         const taskCollection = client.db("flowboardDB").collection("tasks");
         const userCollection = client.db("flowboardDB").collection("users");
