@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         app.get("/", (req, res) => {
-            res.send("Server Running");
+            res.send("Welcome to the server");
         });
 
         app.listen(port, () => {
